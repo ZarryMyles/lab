@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+
+dat=pd.read_csv('enjoysport.csv')
+dat=pd.DataFrame(dat)
+print(dat)
+
+concepts = np.array(dat.iloc[:,0:-1])
+print(concepts)
+
+target = np.array(dat.iloc[:,-1])
+print(target)
+
+def learn(concepts, target):
+    specific_h = concepts[0].copy()
+    print(specific_h)
+    
+    general_h = [['?' for i in range(len(specific_h))] for i in range(len(specific_h))]
+    print(general_h)
+    
+    for i,h in enumerate(concepts):
+        if target[i]=="yes":
+            for x in range(len(specific_h)):
+                if h[x]!=specific_h[x]:
+                    specific_h[x]='?'
+                    general_h[x][x]='?'
+                    
+        if target[i]=="no":
+            for x in range(len(specific_h)):
+                if h[x]!=specific_h[x]:
+                    general_h[x][x]=specific_h[x]
+                else:
+                    general_h[x][x]='?'
+        print("Step: ",i+1)
+        print(specific_h)
+        print(general_h)
+        
+    ind = [i for i,val in enumerate(general_h)if val==['?','?','?','?','?','?']]
+    for i in ind:
+        general_h.remove(['?','?','?','?','?','?'])
+    return specific_h,general_h
+    
+final_s, final_h = learn(concepts, target)
+print("Final Specific_H = ", final_s)
+print("Final General_H = ", final_h)

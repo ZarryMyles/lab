@@ -1,0 +1,49 @@
+import numpy as np
+
+X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float)
+y = np.array(([92], [86], [89]), dtype=float)
+X = X/np.amax(X, axis=0)
+y = y/100
+
+
+def sig(x):
+    return (1/(1+np.exp(-x)))
+
+
+def der_sig(x):
+    return x*(1-x)
+
+
+epoch = 7000
+lr = 0.1
+inp_neur = 2
+hid_neur = 3
+out_neur = 1
+
+wh = np.random.uniform(size=(inp_neur, hid_neur))
+bh = np.random.uniform(size=(1, hid_neur))
+wout = np.random.uniform(size=(hid_neur, out_neur))
+bout = np.random.uniform(size=(1, out_neur))
+
+for i in range(epoch):
+    # Forward Propagation
+    hinp = bh + np.dot(X, wh)
+    hlayer = sig(hinp)
+    oinp = bout + np.dot(hlayer, wout)
+    output = sig(oinp)
+
+    # Backward Propagation
+    EO = y-output
+    dout = EO * der_sig(output)
+    EH = dout.dot(wout.T)
+    hid_grad = der_sig(hlayer)
+
+    d_hid = EH * hid_grad
+    wout += hlayer.T.dot(dout) * lr
+
+    bout += np.sum(dout, axis=0, keepdims=True) * lr
+    wh += X.T.dot(d_hid) * lr
+
+print("Input: \n", X)
+print("Actual Output: \n", y)
+print("Predicted Output: \n", output)
