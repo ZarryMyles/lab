@@ -1,0 +1,45 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def kernal(point, xmat, k):
+    m,n = np.shape(xmat)
+    weights = np.mat(np.eye(m))
+    for i in range(m):
+        diff = point - xmat[i]
+        weights[i,i] = np.exp(diff*diff.T/(-2.0*k**2))
+    return weights
+
+def localweights(point, xmat, ymat, k):
+    wei = kernal(point, xmat, k)
+    W = (X.T*(wei*X)).I*(X.T*(wei*ymat.T))
+    return W
+
+def lwr(xmat, ymat, k):
+    m ,n = np.shape(xmat)
+    ypred = np.zeros(m)
+    for i in range(m):
+        ypred[i] = xmat[i]*localweights(xmat[i], xmat, ymat, k)
+    return ypred
+
+data = pd.read_csv('tips_10.csv')
+bill = np.array(data.total_bill)
+tip = np.array(data.tip)
+mbill = np.mat(bill)
+mtip = np.mat(tip)
+
+m= np.shape(mbill)[1]
+one = np.mat(np.ones(m))
+X = np.hstack((one.T,mbill.T))
+ypred = lwr(X,mtip,2)
+
+sortIndex = X[:,1].argsort(0)
+xsort = X[sortIndex][:,0]
+
+fig=plt.figure()
+ax=fig.add_subplot(1,1,1)
+ax.scatter(bill,tip,color='blue')
+ax.plot(xsort[:,1], ypred[sortIndex], color='orange', linewidth=6)
+plt.xlabel('Total Bill')
+plt.ylabel('Tip')
+plt.show()
